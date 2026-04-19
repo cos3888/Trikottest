@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trikot-Editor – 3 reale Bases (Fix v3)</title>
+<title>Trikot-Editor – finaler Fixblock</title>
 <style>
 :root {
   --bg1:#161d2b; --bg2:#0b1018; --panel:rgba(18,25,38,.90); --panel2:rgba(255,255,255,.04);
@@ -11,14 +11,8 @@
   --shadow:0 20px 60px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
-body {
-  margin:0;font-family:Inter,system-ui,Arial,sans-serif;color:var(--text);
-  background:
-    radial-gradient(circle at 20% 20%,rgba(255,255,255,.05),transparent 28%),
-    radial-gradient(circle at 80% 10%,rgba(255,255,255,.04),transparent 20%),
-    linear-gradient(180deg,var(--bg1),var(--bg2));
-  min-height:100vh;
-}
+body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;color:var(--text);
+background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.05),transparent 28%),radial-gradient(circle at 80% 10%,rgba(255,255,255,.04),transparent 20%),linear-gradient(180deg,var(--bg1),var(--bg2));min-height:100vh}
 .wrap{max-width:1480px;margin:0 auto;padding:28px;display:grid;grid-template-columns:420px 1fr;gap:24px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
 .controls{padding:20px}
@@ -30,30 +24,15 @@ h1{margin:0 0 10px;font-size:30px;line-height:1.05}
 .tabbtn{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);padding:12px;border-radius:12px;cursor:pointer;font:inherit}
 .tabbtn.active{outline:2px solid var(--accent);background:rgba(111,167,255,.12)}
 .row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-bottom:10px}
-select, button, textarea {
-  width:100%; border-radius:12px; border:1px solid var(--line);
-  background:rgba(255,255,255,.06); color:var(--text); padding:10px 12px; font:inherit;
-}
+select,button,textarea{width:100%;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);padding:10px 12px;font:inherit}
 button{cursor:pointer}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .swatch{height:48px;border-radius:12px;border:1px solid var(--line);position:relative;overflow:hidden}
 .swatch span{position:absolute;left:8px;bottom:6px;font-size:11px;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:8px}
 .note{color:var(--muted);font-size:12px;line-height:1.45;margin-top:8px}
-.viewer {
-  min-height:900px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
-  background:
-    radial-gradient(circle at 50% 18%,rgba(255,255,255,.12),transparent 23%),
-    radial-gradient(circle at 50% 56%,rgba(255,255,255,.03),transparent 35%),
-    linear-gradient(180deg,#171d2a,#0b1018);
-}
-.viewer::before {
-  content:""; position:absolute; inset:0;
-  background:
-    repeating-linear-gradient(90deg,rgba(255,255,255,.015) 0 2px,transparent 2px 180px),
-    repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 2px,transparent 2px 160px);
-  opacity:.35; pointer-events:none;
-}
+.viewer{min-height:900px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 18%,rgba(255,255,255,.12),transparent 23%),radial-gradient(circle at 50% 56%,rgba(255,255,255,.03),transparent 35%),linear-gradient(180deg,#171d2a,#0b1018)}
+.viewer::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.015) 0 2px,transparent 2px 180px),repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 2px,transparent 2px 160px);opacity:.35;pointer-events:none}
 .stage-title{position:absolute;left:24px;top:20px;z-index:2}
 .stage-title h2{margin:0;font-size:18px;letter-spacing:.08em;text-transform:uppercase}
 .stage-title p{margin:5px 0 0;color:var(--muted);font-size:13px}
@@ -65,53 +44,53 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
 </head>
 <body>
 <div class="wrap">
-  <aside class="panel controls">
-    <h1>Trikot-Editor</h1>
-    <div class="sub">Fix v3: Masken werden jetzt hart per Pixel-Alpha auf die Zusatzebenen angewendet. Das Wappenzentrum wurde zusätzlich weiter nach rechts und etwas nach oben verschoben.</div>
+<aside class="panel controls">
+<h1>Trikot-Editor</h1>
+<div class="sub">Fixblock mit exakt deckungsgleichen Bases aus einem Master-Blanco. Die ersten Masken sind zusätzlich näher an Kragen, Brustbereich und Bündchen ausgerichtet.</div>
 
-    <div class="tabs">
-      <button class="tabbtn active" id="tabHome">Heimtrikot</button>
-      <button class="tabbtn" id="tabAway">Auswärtstrikot</button>
-    </div>
+<div class="tabs">
+  <button class="tabbtn active" id="tabHome">Heimtrikot</button>
+  <button class="tabbtn" id="tabAway">Auswärtstrikot</button>
+</div>
 
-    <div class="group">
-      <h2>Zusammensetzung</h2>
-      <div class="row"><label>Base-Farbe</label><select id="baseSelect"></select></div>
-      <div class="row"><label>Stilmaske</label><select id="styleMaskSelect"></select></div>
-      <div class="row"><label>Stilfarbe</label><select id="styleColorSelect"></select></div>
-      <div class="row"><label>Akzentmaske</label><select id="accentMaskSelect"></select></div>
-      <div class="row"><label>Akzentfarbe</label><select id="accentColorSelect"></select></div>
-      <div class="note">Diese Testversion nutzt für Base, Stil und Akzent dieselben 3 vorbereiteten Trikots.</div>
-    </div>
+<div class="group">
+  <h2>Zusammensetzung</h2>
+  <div class="row"><label>Base-Farbe</label><select id="baseSelect"></select></div>
+  <div class="row"><label>Stilmaske</label><select id="styleMaskSelect"></select></div>
+  <div class="row"><label>Stilfarbe</label><select id="styleColorSelect"></select></div>
+  <div class="row"><label>Akzentmaske</label><select id="accentMaskSelect"></select></div>
+  <div class="row"><label>Akzentfarbe</label><select id="accentColorSelect"></select></div>
+  <div class="note">Diese Testversion nutzt für Base, Stil und Akzent dieselben 3 vorbereiteten Trikots aus einem identischen Master.</div>
+</div>
 
-    <div class="group">
-      <h2>Farbvorschau</h2>
-      <div class="swatches">
-        <div class="swatch" id="swBase"><span>Base</span></div>
-        <div class="swatch" id="swStyle"><span>Stil</span></div>
-        <div class="swatch" id="swAccent"><span>Akzent</span></div>
-      </div>
-    </div>
+<div class="group">
+  <h2>Farbvorschau</h2>
+  <div class="swatches">
+    <div class="swatch" id="swBase"><span>Base</span></div>
+    <div class="swatch" id="swStyle"><span>Stil</span></div>
+    <div class="swatch" id="swAccent"><span>Akzent</span></div>
+  </div>
+</div>
 
-    <div class="group">
-      <h2>Konfiguration</h2>
-      <div class="actions" style="margin-bottom:10px">
-        <button id="applyBtn">Aktive Auswahl übernehmen</button>
-        <button id="resetBtn">Aktives Set zurücksetzen</button>
-      </div>
-      <textarea id="configBox" class="codebox" spellcheck="false"></textarea>
-    </div>
-  </aside>
+<div class="group">
+  <h2>Konfiguration</h2>
+  <div class="actions" style="margin-bottom:10px">
+    <button id="applyBtn">Aktive Auswahl übernehmen</button>
+    <button id="resetBtn">Aktives Set zurücksetzen</button>
+  </div>
+  <textarea id="configBox" class="codebox" spellcheck="false"></textarea>
+</div>
+</aside>
 
-  <main class="panel viewer">
-    <div class="stage-title">
-      <h2>Live-Vorschau</h2>
-      <p>Fix v3 für harte Maskierung und Wappenposition</p>
-    </div>
-    <div class="canvas-wrap">
-      <canvas id="canvas" width="1024" height="1024"></canvas>
-    </div>
-  </main>
+<main class="panel viewer">
+  <div class="stage-title">
+    <h2>Live-Vorschau</h2>
+    <p>Exakte Base-Deckung + angepasste erste Masken + korrigierte Wappenposition</p>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="canvas" width="1024" height="1024"></canvas>
+  </div>
+</main>
 </div>
 
 <script>
@@ -137,8 +116,8 @@ const accentOptions = [
 
 const state = {
   activeKit:'home_kit',
-  home_kit:{base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'white',accent_mask:'collar_cuffs'},
-  away_kit:{base_color:'white',style_color:'navy',style_mask:'center_band',accent_color:'lime',accent_mask:'collar'},
+  home_kit:{base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'lime',accent_mask:'collar'},
+  away_kit:{base_color:'white',style_color:'navy',style_mask:'center_band',accent_color:'navy',accent_mask:'collar_cuffs'},
 };
 
 const els = {
@@ -226,14 +205,12 @@ function applyFormToActiveKit() {
 }
 function resetActiveKit() {
   if (state.activeKit === 'home_kit') {
-    state.home_kit = {base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'white',accent_mask:'collar_cuffs'};
+    state.home_kit = {base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'lime',accent_mask:'collar'};
   } else {
-    state.away_kit = {base_color:'white',style_color:'navy',style_mask:'center_band',accent_color:'lime',accent_mask:'collar'};
+    state.away_kit = {base_color:'white',style_color:'navy',style_mask:'center_band',accent_color:'navy',accent_mask:'collar_cuffs'};
   }
   loadActiveKitToForm();
 }
-
-// Hard mask application by pixel alpha
 function getMaskedLayer(baseImg, maskImg) {
   if (!baseImg || !maskImg || !baseImg.complete || !maskImg.complete) return null;
 
@@ -256,23 +233,18 @@ function getMaskedLayer(baseImg, maskImg) {
 
   const ld = layer.data;
   const md = mask.data;
-
   for (let i = 0; i < ld.length; i += 4) {
-    // use mask alpha only
     const ma = md[i + 3] / 255;
     ld[i + 3] = Math.round(ld[i + 3] * ma);
   }
-
   offCtx.putImageData(layer, 0, 0);
   return off;
 }
-
 function render() {
   ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
   const kit = state[state.activeKit];
   const baseImg = assets.bases[kit.base_color];
   if (!baseImg || !baseImg.complete) return;
-
   ctx.drawImage(baseImg, 0, 0);
 
   if (kit.style_mask !== 'none') {
@@ -289,15 +261,14 @@ function render() {
     const ratio = Math.min(crestMaxW / assets.crest.width, crestMaxH / assets.crest.height);
     const w = Math.round(assets.crest.width * ratio);
     const h = Math.round(assets.crest.height * ratio);
-    // target center shifted toward user's red point
-    const centerX = 648;
-    const centerY = 330;
+    // shifted higher and further right from viewer perspective
+    const centerX = 690;
+    const centerY = 304;
     const x = Math.round(centerX - w / 2);
     const y = Math.round(centerY - h / 2);
     ctx.drawImage(assets.crest, x, y, w, h);
   }
 }
-
 els.tabHome.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='home_kit'; loadActiveKitToForm(); });
 els.tabAway.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='away_kit'; loadActiveKitToForm(); });
 [els.baseSelect, els.styleMaskSelect, els.styleColorSelect, els.accentMaskSelect, els.accentColorSelect].forEach(el => {
