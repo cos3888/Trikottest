@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trikot-Editor – 3 reale Bases</title>
+<style>
+:root {
+  --bg1:#161d2b; --bg2:#0b1018; --panel:rgba(18,25,38,.90); --panel2:rgba(255,255,255,.04);
+  --line:rgba(255,255,255,.08); --text:#eef3fb; --muted:#aab7ca; --accent:#6fa7ff;
+  --shadow:0 20px 60px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+body {
+  margin:0;font-family:Inter,system-ui,Arial,sans-serif;color:var(--text);
+  background:
+    radial-gradient(circle at 20% 20%,rgba(255,255,255,.05),transparent 28%),
+    radial-gradient(circle at 80% 10%,rgba(255,255,255,.04),transparent 20%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+  min-height:100vh;
+}
+.wrap{max-width:1480px;margin:0 auto;padding:28px;display:grid;grid-template-columns:420px 1fr;gap:24px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}
+.controls{padding:20px}
+h1{margin:0 0 10px;font-size:30px;line-height:1.05}
+.sub{color:var(--muted);font-size:14px;line-height:1.45;margin-bottom:20px}
+.group{padding:16px;background:var(--panel2);border:1px solid var(--line);border-radius:16px;margin-bottom:14px}
+.group h2{margin:0 0 12px;font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.tabbtn{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);padding:12px;border-radius:12px;cursor:pointer;font:inherit}
+.tabbtn.active{outline:2px solid var(--accent);background:rgba(111,167,255,.12)}
+.row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-bottom:10px}
+select, button, textarea {
+  width:100%; border-radius:12px; border:1px solid var(--line);
+  background:rgba(255,255,255,.06); color:var(--text); padding:10px 12px; font:inherit;
+}
+button{cursor:pointer}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.swatch{height:48px;border-radius:12px;border:1px solid var(--line);position:relative;overflow:hidden}
+.swatch span{position:absolute;left:8px;bottom:6px;font-size:11px;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:8px}
+.note{color:var(--muted);font-size:12px;line-height:1.45;margin-top:8px}
+.viewer {
+  min-height:900px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(255,255,255,.12),transparent 23%),
+    radial-gradient(circle at 50% 56%,rgba(255,255,255,.03),transparent 35%),
+    linear-gradient(180deg,#171d2a,#0b1018);
+}
+.viewer::before {
+  content:""; position:absolute; inset:0;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.015) 0 2px,transparent 2px 180px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 2px,transparent 2px 160px);
+  opacity:.35; pointer-events:none;
+}
+.stage-title{position:absolute;left:24px;top:20px;z-index:2}
+.stage-title h2{margin:0;font-size:18px;letter-spacing:.08em;text-transform:uppercase}
+.stage-title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.canvas-wrap{width:min(960px,96%);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;z-index:1}
+canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,.55))}
+.codebox{height:220px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+@media (max-width:1100px){.wrap{grid-template-columns:1fr}.viewer{min-height:640px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="panel controls">
+    <h1>Trikot-Editor</h1>
+    <div class="sub">
+      Testversion mit 3 vorbereiteten Base-Trikots als echte PNG-Grundlagen: Weiß, Navy und Limette.
+      Gespeichert wird nur die Zusammensetzung.
+    </div>
+
+    <div class="tabs">
+      <button class="tabbtn active" id="tabHome">Heimtrikot</button>
+      <button class="tabbtn" id="tabAway">Auswärtstrikot</button>
+    </div>
+
+    <div class="group">
+      <h2>Zusammensetzung</h2>
+      <div class="row"><label>Base-Farbe</label><select id="baseSelect"></select></div>
+      <div class="row"><label>Stilmaske</label><select id="styleMaskSelect"></select></div>
+      <div class="row"><label>Stilfarbe</label><select id="styleColorSelect"></select></div>
+      <div class="row"><label>Akzentmaske</label><select id="accentMaskSelect"></select></div>
+      <div class="row"><label>Akzentfarbe</label><select id="accentColorSelect"></select></div>
+      <div class="note">Diese Testversion nutzt für Base, Stil und Akzent dieselben 3 vorbereiteten Trikots.</div>
+    </div>
+
+    <div class="group">
+      <h2>Farbvorschau</h2>
+      <div class="swatches">
+        <div class="swatch" id="swBase"><span>Base</span></div>
+        <div class="swatch" id="swStyle"><span>Stil</span></div>
+        <div class="swatch" id="swAccent"><span>Akzent</span></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Konfiguration</h2>
+      <div class="actions" style="margin-bottom:10px">
+        <button id="applyBtn">Aktive Auswahl übernehmen</button>
+        <button id="resetBtn">Aktives Set zurücksetzen</button>
+      </div>
+      <textarea id="configBox" class="codebox" spellcheck="false"></textarea>
+    </div>
+  </aside>
+
+  <main class="panel viewer">
+    <div class="stage-title">
+      <h2>Live-Vorschau</h2>
+      <p>Test mit 3 echten Base-PNGs statt Farbfilter auf einem einzigen Blanco</p>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas" width="1024" height="1024"></canvas>
+    </div>
+  </main>
+</div>
+
+<script>
+const palette = [{"id": "white", "label": "Weiß", "hex": "#F5F5F2"}, {"id": "navy", "label": "Navy", "hex": "#0F2345"}, {"id": "lime", "label": "Limette", "hex": "#84CC16"}];
+const styleOptions = [{"id": "none", "label": "keine"}, {"id": "chest_ring", "label": "Brustring"}, {"id": "vertical_stripes", "label": "Vertikale Streifen"}, {"id": "center_band", "label": "Mittelbahn"}, {"id": "shoulder_panel", "label": "Schulterpanel"}];
+const accentOptions = [{"id": "none", "label": "keiner"}, {"id": "collar", "label": "Kragen"}, {"id": "cuffs", "label": "Bündchen"}, {"id": "collar_cuffs", "label": "Kragen + Bündchen"}, {"id": "thin_lines", "label": "Feine Linien"}];
+
+const state = {
+  activeKit:'home_kit',
+  home_kit:{base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'white',accent_mask:'collar_cuffs'},
+  away_kit:{base_color:'white',style_color:'navy',style_mask:'center_band',accent_color:'lime',accent_mask:'collar'},
+};
+
+const els = {
+  baseSelect: document.getElementById('baseSelect'),
+  styleMaskSelect: document.getElementById('styleMaskSelect'),
+  styleColorSelect: document.getElementById('styleColorSelect'),
+  accentMaskSelect: document.getElementById('accentMaskSelect'),
+  accentColorSelect: document.getElementById('accentColorSelect'),
+  configBox: document.getElementById('configBox'),
+  tabHome: document.getElementById('tabHome'),
+  tabAway: document.getElementById('tabAway'),
+  swBase: document.getElementById('swBase'),
+  swStyle: document.getElementById('swStyle'),
+  swAccent: document.getElementById('swAccent'),
+  canvas: document.getElementById('canvas')
+};
+const ctx = els.canvas.getContext('2d');
+
+function fillSelect(select, items) {
+  select.innerHTML = items.map(item => `<option value="${item.id}">${item.label}</option>`).join('');
+}
+fillSelect(els.baseSelect, palette);
+fillSelect(els.styleColorSelect, palette);
+fillSelect(els.accentColorSelect, palette);
+fillSelect(els.styleMaskSelect, styleOptions);
+fillSelect(els.accentMaskSelect, accentOptions);
+
+const assets = {
+  crest: new Image(),
+  bases: {},
+  styleMasks: {},
+  accentMasks: {}
+};
+assets.crest.src = 'crest.png';
+for (const p of palette) {
+  const img = new Image();
+  img.src = `base_${p.id}.png`;
+  assets.bases[p.id] = img;
+}
+for (const s of styleOptions) {
+  if (s.id !== 'none') {
+    const img = new Image();
+    img.src = `mask_style_${s.id}.png`;
+    assets.styleMasks[s.id] = img;
+  }
+}
+for (const a of accentOptions) {
+  if (a.id !== 'none') {
+    const img = new Image();
+    img.src = `mask_accent_${a.id}.png`;
+    assets.accentMasks[a.id] = img;
+  }
+}
+
+function setTabButtons() {
+  els.tabHome.classList.toggle('active', state.activeKit === 'home_kit');
+  els.tabAway.classList.toggle('active', state.activeKit === 'away_kit');
+}
+
+function updateSwatches() {
+  els.swBase.style.background = palette.find(p=>p.id===els.baseSelect.value)?.hex || '#333';
+  els.swStyle.style.background = palette.find(p=>p.id===els.styleColorSelect.value)?.hex || '#333';
+  els.swAccent.style.background = palette.find(p=>p.id===els.accentColorSelect.value)?.hex || '#333';
+}
+
+function updateConfigBox() {
+  els.configBox.value = JSON.stringify({home_kit:state.home_kit, away_kit:state.away_kit}, null, 2);
+}
+
+function loadActiveKitToForm() {
+  const kit = state[state.activeKit];
+  els.baseSelect.value = kit.base_color;
+  els.styleMaskSelect.value = kit.style_mask;
+  els.styleColorSelect.value = kit.style_color;
+  els.accentMaskSelect.value = kit.accent_mask;
+  els.accentColorSelect.value = kit.accent_color;
+  setTabButtons();
+  updateSwatches();
+  updateConfigBox();
+  render();
+}
+
+function applyFormToActiveKit() {
+  state[state.activeKit] = {
+    base_color: els.baseSelect.value,
+    style_mask: els.styleMaskSelect.value,
+    style_color: els.styleColorSelect.value,
+    accent_mask: els.accentMaskSelect.value,
+    accent_color: els.accentColorSelect.value
+  };
+  updateSwatches();
+  updateConfigBox();
+  render();
+}
+
+function resetActiveKit() {
+  if (state.activeKit === 'home_kit') {
+    state.home_kit = {base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'white',accent_mask:'collar_cuffs'};
+  } else {
+    state.away_kit = {base_color:'white',style_color:'navy',style_mask:'center_band',accent_color:'lime',accent_mask:'collar'};
+  }
+  loadActiveKitToForm();
+}
+
+function drawMaskedBase(baseImg, maskImg) {
+  if (!baseImg || !maskImg) return;
+  const temp = document.createElement('canvas');
+  temp.width = els.canvas.width;
+  temp.height = els.canvas.height;
+  const tctx = temp.getContext('2d');
+  tctx.drawImage(baseImg, 0, 0);
+  tctx.globalCompositeOperation = 'destination-in';
+  tctx.drawImage(maskImg, 0, 0);
+  tctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(temp, 0, 0);
+}
+
+function render() {
+  ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
+  const kit = state[state.activeKit];
+  const baseImg = assets.bases[kit.base_color];
+  if (!baseImg || !baseImg.complete) return;
+
+  ctx.drawImage(baseImg, 0, 0);
+
+  if (kit.style_mask !== 'none') {
+    drawMaskedBase(assets.bases[kit.style_color], assets.styleMasks[kit.style_mask]);
+  }
+  if (kit.accent_mask !== 'none') {
+    drawMaskedBase(assets.bases[kit.accent_color], assets.accentMasks[kit.accent_mask]);
+  }
+
+  if (assets.crest.complete) {
+    const crestMaxW = 112, crestMaxH = 112;
+    const ratio = Math.min(crestMaxW / assets.crest.width, crestMaxH / assets.crest.height);
+    const w = Math.round(assets.crest.width * ratio);
+    const h = Math.round(assets.crest.height * ratio);
+    const x = 625 + Math.round((crestMaxW - w) / 2);
+    const y = 250 + Math.round((crestMaxH - h) / 2);
+    ctx.drawImage(assets.crest, x, y, w, h);
+  }
+}
+
+els.tabHome.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='home_kit'; loadActiveKitToForm(); });
+els.tabAway.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='away_kit'; loadActiveKitToForm(); });
+[els.baseSelect, els.styleMaskSelect, els.styleColorSelect, els.accentMaskSelect, els.accentColorSelect].forEach(el => {
+  el.addEventListener('change', ()=>{ updateSwatches(); render(); });
+});
+document.getElementById('applyBtn').addEventListener('click', applyFormToActiveKit);
+document.getElementById('resetBtn').addEventListener('click', resetActiveKit);
+
+let loaded = 0;
+const expected = 1 + Object.keys(assets.bases).length + Object.keys(assets.styleMasks).length + Object.keys(assets.accentMasks).length;
+function ready() { loaded += 1; if (loaded >= expected) loadActiveKitToForm(); }
+assets.crest.onload = ready;
+Object.values(assets.bases).forEach(img => img.onload = ready);
+Object.values(assets.styleMasks).forEach(img => img.onload = ready);
+Object.values(assets.accentMasks).forEach(img => img.onload = ready);
+</script>
+</body>
+</html>
