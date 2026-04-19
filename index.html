@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trikot-Editor – Masken angepasst</title>
+<title>Trikot-Editor Testpaket</title>
 <style>
-:root {
+:root{
   --bg1:#161d2b; --bg2:#0b1018; --panel:rgba(18,25,38,.90); --panel2:rgba(255,255,255,.04);
   --line:rgba(255,255,255,.08); --text:#eef3fb; --muted:#aab7ca; --accent:#6fa7ff;
   --shadow:0 20px 60px rgba(0,0,0,.45);
@@ -46,7 +46,7 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
 <div class="wrap">
 <aside class="panel controls">
 <h1>Trikot-Editor</h1>
-<div class="sub">Maskenblock überarbeitet: Style-Masken folgen sauberer der Trikotgrundlage. Thin Lines ist jetzt Style. Wappen leicht nach links und unten verschoben.</div>
+<div class="sub">Komplettes Testpaket mit 3 deckungsgleichen Bases aus einem Master und neu gezeichneten Masken, die näher an der Trikotform liegen.</div>
 
 <div class="tabs">
   <button class="tabbtn active" id="tabHome">Heimtrikot</button>
@@ -60,7 +60,7 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
   <div class="row"><label>Stilfarbe</label><select id="styleColorSelect"></select></div>
   <div class="row"><label>Akzentmaske</label><select id="accentMaskSelect"></select></div>
   <div class="row"><label>Akzentfarbe</label><select id="accentColorSelect"></select></div>
-  <div class="note">Style: chest_ring, vertical_stripes, center_band, shoulder_panel, thin_lines. Akzent: collar, cuffs, collar_cuffs.</div>
+  <div class="note">Thin Lines ist jetzt Style. Akzente sind nur noch collar, cuffs und collar_cuffs.</div>
 </div>
 
 <div class="group">
@@ -85,7 +85,7 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
 <main class="panel viewer">
   <div class="stage-title">
     <h2>Live-Vorschau</h2>
-    <p>Masken angepasst an Trikotgrundlage und Anschlüsse</p>
+    <p>3 Bases + neue Masken + Wappen leicht weiter links und tiefer</p>
   </div>
   <div class="canvas-wrap">
     <canvas id="canvas" width="1024" height="1024"></canvas>
@@ -104,7 +104,6 @@ const styleOptions = [
   {id:'chest_ring',label:'Brustring'},
   {id:'vertical_stripes',label:'Vertikale Streifen'},
   {id:'center_band',label:'Mittelbahn'},
-  {id:'shoulder_panel',label:'Schulterpanel'},
   {id:'thin_lines',label:'Thin Lines'}
 ];
 const accentOptions = [
@@ -117,7 +116,7 @@ const accentOptions = [
 const state = {
   activeKit:'home_kit',
   home_kit:{base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'lime',accent_mask:'collar'},
-  away_kit:{base_color:'white',style_color:'navy',style_mask:'vertical_stripes',accent_color:'navy',accent_mask:'collar_cuffs'},
+  away_kit:{base_color:'white',style_color:'navy',style_mask:'vertical_stripes',accent_color:'navy',accent_mask:'collar_cuffs'}
 };
 
 const els = {
@@ -259,8 +258,8 @@ function render() {
     const ratio = Math.min(crestMaxW / assets.crest.width, crestMaxH / assets.crest.height);
     const w = Math.round(assets.crest.width * ratio);
     const h = Math.round(assets.crest.height * ratio);
-    const centerX = 678;  // slightly left
-    const centerY = 314;  // slightly down
+    const centerX = 668;
+    const centerY = 326;
     const x = Math.round(centerX - w / 2);
     const y = Math.round(centerY - h / 2);
     ctx.drawImage(assets.crest, x, y, w, h);
