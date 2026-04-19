@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trikot-Editor – 3 reale Bases (Fix)</title>
+<title>Trikot-Editor – 3 reale Bases (Fix v3)</title>
 <style>
 :root {
   --bg1:#161d2b; --bg2:#0b1018; --panel:rgba(18,25,38,.90); --panel2:rgba(255,255,255,.04);
@@ -68,7 +67,7 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
 <div class="wrap">
   <aside class="panel controls">
     <h1>Trikot-Editor</h1>
-    <div class="sub">Korrigierte Testversion mit 3 echten Base-Trikots. Ebene 2 und 3 zeigen jetzt nur Maskenflächen. Wappenposition wurde neu gesetzt.</div>
+    <div class="sub">Fix v3: Masken werden jetzt hart per Pixel-Alpha auf die Zusatzebenen angewendet. Das Wappenzentrum wurde zusätzlich weiter nach rechts und etwas nach oben verschoben.</div>
 
     <div class="tabs">
       <button class="tabbtn active" id="tabHome">Heimtrikot</button>
@@ -107,7 +106,7 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
   <main class="panel viewer">
     <div class="stage-title">
       <h2>Live-Vorschau</h2>
-      <p>Fix v2 für Maskenlogik und Wappenposition</p>
+      <p>Fix v3 für harte Maskierung und Wappenposition</p>
     </div>
     <div class="canvas-wrap">
       <canvas id="canvas" width="1024" height="1024"></canvas>
@@ -233,19 +232,41 @@ function resetActiveKit() {
   }
   loadActiveKitToForm();
 }
-function drawMaskedBase(baseImg, maskImg) {
-  if (!baseImg || !maskImg || !baseImg.complete || !maskImg.complete) return;
-  const temp = document.createElement('canvas');
-  temp.width = els.canvas.width;
-  temp.height = els.canvas.height;
-  const tctx = temp.getContext('2d');
-  tctx.clearRect(0,0,temp.width,temp.height);
-  tctx.drawImage(baseImg, 0, 0);
-  tctx.globalCompositeOperation = 'destination-in';
-  tctx.drawImage(maskImg, 0, 0);
-  tctx.globalCompositeOperation = 'source-over';
-  ctx.drawImage(temp, 0, 0);
+
+// Hard mask application by pixel alpha
+function getMaskedLayer(baseImg, maskImg) {
+  if (!baseImg || !maskImg || !baseImg.complete || !maskImg.complete) return null;
+
+  const off = document.createElement('canvas');
+  off.width = els.canvas.width;
+  off.height = els.canvas.height;
+  const offCtx = off.getContext('2d', {willReadFrequently:true});
+  offCtx.clearRect(0,0,off.width,off.height);
+  offCtx.drawImage(baseImg, 0, 0);
+
+  const layer = offCtx.getImageData(0, 0, off.width, off.height);
+
+  const mcan = document.createElement('canvas');
+  mcan.width = els.canvas.width;
+  mcan.height = els.canvas.height;
+  const mctx = mcan.getContext('2d', {willReadFrequently:true});
+  mctx.clearRect(0,0,mcan.width,mcan.height);
+  mctx.drawImage(maskImg, 0, 0);
+  const mask = mctx.getImageData(0, 0, mcan.width, mcan.height);
+
+  const ld = layer.data;
+  const md = mask.data;
+
+  for (let i = 0; i < ld.length; i += 4) {
+    // use mask alpha only
+    const ma = md[i + 3] / 255;
+    ld[i + 3] = Math.round(ld[i + 3] * ma);
+  }
+
+  offCtx.putImageData(layer, 0, 0);
+  return off;
 }
+
 function render() {
   ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
   const kit = state[state.activeKit];
@@ -254,19 +275,29 @@ function render() {
 
   ctx.drawImage(baseImg, 0, 0);
 
-  if (kit.style_mask !== 'none') drawMaskedBase(assets.bases[kit.style_color], assets.styleMasks[kit.style_mask]);
-  if (kit.accent_mask !== 'none') drawMaskedBase(assets.bases[kit.accent_color], assets.accentMasks[kit.accent_mask]);
+  if (kit.style_mask !== 'none') {
+    const styleLayer = getMaskedLayer(assets.bases[kit.style_color], assets.styleMasks[kit.style_mask]);
+    if (styleLayer) ctx.drawImage(styleLayer, 0, 0);
+  }
+  if (kit.accent_mask !== 'none') {
+    const accentLayer = getMaskedLayer(assets.bases[kit.accent_color], assets.accentMasks[kit.accent_mask]);
+    if (accentLayer) ctx.drawImage(accentLayer, 0, 0);
+  }
 
   if (assets.crest.complete) {
     const crestMaxW = 96, crestMaxH = 96;
     const ratio = Math.min(crestMaxW / assets.crest.width, crestMaxH / assets.crest.height);
     const w = Math.round(assets.crest.width * ratio);
     const h = Math.round(assets.crest.height * ratio);
-    const x = 504 + Math.round((crestMaxW - w) / 2);
-    const y = 354 + Math.round((crestMaxH - h) / 2);
+    // target center shifted toward user's red point
+    const centerX = 648;
+    const centerY = 330;
+    const x = Math.round(centerX - w / 2);
+    const y = Math.round(centerY - h / 2);
     ctx.drawImage(assets.crest, x, y, w, h);
   }
 }
+
 els.tabHome.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='home_kit'; loadActiveKitToForm(); });
 els.tabAway.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='away_kit'; loadActiveKitToForm(); });
 [els.baseSelect, els.styleMaskSelect, els.styleColorSelect, els.accentMaskSelect, els.accentColorSelect].forEach(el => {
