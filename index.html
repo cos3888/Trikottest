@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trikot-Editor – 3 reale Bases</title>
+<title>Trikot-Editor – 3 reale Bases (Fix)</title>
 <style>
 :root {
   --bg1:#161d2b; --bg2:#0b1018; --panel:rgba(18,25,38,.90); --panel2:rgba(255,255,255,.04);
@@ -67,10 +68,7 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
 <div class="wrap">
   <aside class="panel controls">
     <h1>Trikot-Editor</h1>
-    <div class="sub">
-      Testversion mit 3 vorbereiteten Base-Trikots als echte PNG-Grundlagen: Weiß, Navy und Limette.
-      Gespeichert wird nur die Zusammensetzung.
-    </div>
+    <div class="sub">Korrigierte Testversion mit 3 echten Base-Trikots. Ebene 2 und 3 zeigen jetzt nur Maskenflächen. Wappenposition wurde neu gesetzt.</div>
 
     <div class="tabs">
       <button class="tabbtn active" id="tabHome">Heimtrikot</button>
@@ -109,7 +107,7 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
   <main class="panel viewer">
     <div class="stage-title">
       <h2>Live-Vorschau</h2>
-      <p>Test mit 3 echten Base-PNGs statt Farbfilter auf einem einzigen Blanco</p>
+      <p>Fix für Maskenlogik und Wappenposition</p>
     </div>
     <div class="canvas-wrap">
       <canvas id="canvas" width="1024" height="1024"></canvas>
@@ -118,9 +116,25 @@ canvas{max-width:100%;max-height:100%;filter:drop-shadow(0 38px 70px rgba(0,0,0,
 </div>
 
 <script>
-const palette = [{"id": "white", "label": "Weiß", "hex": "#F5F5F2"}, {"id": "navy", "label": "Navy", "hex": "#0F2345"}, {"id": "lime", "label": "Limette", "hex": "#84CC16"}];
-const styleOptions = [{"id": "none", "label": "keine"}, {"id": "chest_ring", "label": "Brustring"}, {"id": "vertical_stripes", "label": "Vertikale Streifen"}, {"id": "center_band", "label": "Mittelbahn"}, {"id": "shoulder_panel", "label": "Schulterpanel"}];
-const accentOptions = [{"id": "none", "label": "keiner"}, {"id": "collar", "label": "Kragen"}, {"id": "cuffs", "label": "Bündchen"}, {"id": "collar_cuffs", "label": "Kragen + Bündchen"}, {"id": "thin_lines", "label": "Feine Linien"}];
+const palette = [
+  {id:'white',label:'Weiß',hex:'#F5F5F2'},
+  {id:'navy',label:'Navy',hex:'#0F2345'},
+  {id:'lime',label:'Limette',hex:'#84CC16'}
+];
+const styleOptions = [
+  {id:'none',label:'keine'},
+  {id:'chest_ring',label:'Brustring'},
+  {id:'vertical_stripes',label:'Vertikale Streifen'},
+  {id:'center_band',label:'Mittelbahn'},
+  {id:'shoulder_panel',label:'Schulterpanel'}
+];
+const accentOptions = [
+  {id:'none',label:'keiner'},
+  {id:'collar',label:'Kragen'},
+  {id:'cuffs',label:'Bündchen'},
+  {id:'collar_cuffs',label:'Kragen + Bündchen'},
+  {id:'thin_lines',label:'Feine Linien'}
+];
 
 const state = {
   activeKit:'home_kit',
@@ -153,12 +167,7 @@ fillSelect(els.accentColorSelect, palette);
 fillSelect(els.styleMaskSelect, styleOptions);
 fillSelect(els.accentMaskSelect, accentOptions);
 
-const assets = {
-  crest: new Image(),
-  bases: {},
-  styleMasks: {},
-  accentMasks: {}
-};
+const assets = { crest:new Image(), bases:{}, styleMasks:{}, accentMasks:{} };
 assets.crest.src = 'crest.png';
 for (const p of palette) {
   const img = new Image();
@@ -184,17 +193,14 @@ function setTabButtons() {
   els.tabHome.classList.toggle('active', state.activeKit === 'home_kit');
   els.tabAway.classList.toggle('active', state.activeKit === 'away_kit');
 }
-
 function updateSwatches() {
   els.swBase.style.background = palette.find(p=>p.id===els.baseSelect.value)?.hex || '#333';
   els.swStyle.style.background = palette.find(p=>p.id===els.styleColorSelect.value)?.hex || '#333';
   els.swAccent.style.background = palette.find(p=>p.id===els.accentColorSelect.value)?.hex || '#333';
 }
-
 function updateConfigBox() {
   els.configBox.value = JSON.stringify({home_kit:state.home_kit, away_kit:state.away_kit}, null, 2);
 }
-
 function loadActiveKitToForm() {
   const kit = state[state.activeKit];
   els.baseSelect.value = kit.base_color;
@@ -207,7 +213,6 @@ function loadActiveKitToForm() {
   updateConfigBox();
   render();
 }
-
 function applyFormToActiveKit() {
   state[state.activeKit] = {
     base_color: els.baseSelect.value,
@@ -220,7 +225,6 @@ function applyFormToActiveKit() {
   updateConfigBox();
   render();
 }
-
 function resetActiveKit() {
   if (state.activeKit === 'home_kit') {
     state.home_kit = {base_color:'navy',style_color:'white',style_mask:'chest_ring',accent_color:'white',accent_mask:'collar_cuffs'};
@@ -229,20 +233,19 @@ function resetActiveKit() {
   }
   loadActiveKitToForm();
 }
-
 function drawMaskedBase(baseImg, maskImg) {
-  if (!baseImg || !maskImg) return;
+  if (!baseImg || !maskImg || !baseImg.complete || !maskImg.complete) return;
   const temp = document.createElement('canvas');
   temp.width = els.canvas.width;
   temp.height = els.canvas.height;
   const tctx = temp.getContext('2d');
+  tctx.clearRect(0,0,temp.width,temp.height);
   tctx.drawImage(baseImg, 0, 0);
   tctx.globalCompositeOperation = 'destination-in';
   tctx.drawImage(maskImg, 0, 0);
   tctx.globalCompositeOperation = 'source-over';
   ctx.drawImage(temp, 0, 0);
 }
-
 function render() {
   ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
   const kit = state[state.activeKit];
@@ -251,24 +254,19 @@ function render() {
 
   ctx.drawImage(baseImg, 0, 0);
 
-  if (kit.style_mask !== 'none') {
-    drawMaskedBase(assets.bases[kit.style_color], assets.styleMasks[kit.style_mask]);
-  }
-  if (kit.accent_mask !== 'none') {
-    drawMaskedBase(assets.bases[kit.accent_color], assets.accentMasks[kit.accent_mask]);
-  }
+  if (kit.style_mask !== 'none') drawMaskedBase(assets.bases[kit.style_color], assets.styleMasks[kit.style_mask]);
+  if (kit.accent_mask !== 'none') drawMaskedBase(assets.bases[kit.accent_color], assets.accentMasks[kit.accent_mask]);
 
   if (assets.crest.complete) {
-    const crestMaxW = 112, crestMaxH = 112;
+    const crestMaxW = 96, crestMaxH = 96;
     const ratio = Math.min(crestMaxW / assets.crest.width, crestMaxH / assets.crest.height);
     const w = Math.round(assets.crest.width * ratio);
     const h = Math.round(assets.crest.height * ratio);
-    const x = 625 + Math.round((crestMaxW - w) / 2);
-    const y = 250 + Math.round((crestMaxH - h) / 2);
+    const x = 600 + Math.round((crestMaxW - w) / 2);
+    const y = 282 + Math.round((crestMaxH - h) / 2);
     ctx.drawImage(assets.crest, x, y, w, h);
   }
 }
-
 els.tabHome.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='home_kit'; loadActiveKitToForm(); });
 els.tabAway.addEventListener('click', ()=>{ applyFormToActiveKit(); state.activeKit='away_kit'; loadActiveKitToForm(); });
 [els.baseSelect, els.styleMaskSelect, els.styleColorSelect, els.accentMaskSelect, els.accentColorSelect].forEach(el => {
